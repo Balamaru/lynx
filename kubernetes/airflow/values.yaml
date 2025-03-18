@@ -1,0 +1,5 @@
+rbac:
+  create: true
+executor: "CeleryExecutor"
+redis:
+  enabled: true

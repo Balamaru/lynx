@@ -1,0 +1,4 @@
+# values.yaml
+spark:
+    jobNamespaces:
+    - {{namespaceToRunSparkOperator}} # here i would use zeatarou
