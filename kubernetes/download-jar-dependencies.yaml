@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: download-spark-jars
+  namespace: zeatarou
+spec:
+  template:
+    spec:
+      containers:
+      - name: downloader
+        image: curlimages/curl:latest
+        command:
+        - sh
+        - -c
+        - |
+          mkdir -p /jars &&
+          curl -L -o /jars/hadoop-aws-3.3.1.jar https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.1/hadoop-aws-3.3.1.jar &&
+          curl -L -o /jars/aws-java-sdk-bundle-1.11.901.jar https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.901/aws-java-sdk-bundle-1.11.901.jar &&
+          curl -L -o /jars/postgresql-42.7.5.jar https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.5/postgresql-42.7.5.jar
+          # and other jars you need
+        volumeMounts:
+        - name: jars-volume
+          mountPath: /jars
+      restartPolicy: Never
+      volumes:
+      - name: jars-volume
+        persistentVolumeClaim:
+          claimName: spark-jars-pvc
+  backoffLimit: 1
