@@ -117,3 +117,10 @@ UK_PRICE             | /opt/airflow/dags/dag-s3.py           | airflow | None
 ```bash
 kubectl exec -it -n airflow airflow-scheduler-pod-name -- airflow dags trigger UK_PRICE
 ```
+
+# Reference
+- [Deploying Spark on Kubernetes using Helm Charts: Simplified Cluster Management and Configuration](https://medium.com/@SaphE/deploying-apache-spark-on-kubernetes-using-helm-charts-simplified-cluster-management-and-ee5e4f2264fd)
+- [Helm chart for Spark on Kubernetes operator.](https://github.com/kubeflow/spark-operator/tree/master/charts/spark-operator-chart)
+- [Helm Chart for Apache Airflow](https://airflow.apache.org/docs/helm-chart/stable/index.html)
+- [Connect to AWS S3 and Read Files Using Apache Spark](https://medium.com/@Shamimw/connect-to-aws-s3-and-read-files-using-apache-spark-186943a5169a)
+- [Spark SQL Documentation](https://spark.apache.org/docs/latest/api/python/reference/pyspark.sql/index.html)
