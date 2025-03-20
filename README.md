@@ -63,7 +63,7 @@ kubectl get pods -n zeatarou
 kubectl logs -f example-spark-job-driver -n zeatarou
 ```
 
-## 3. Running the Spark-job where need a packages
+## 3. Running the Spark-job Where Need a Packages
 In real cases, when defining spark-jobs, there are many connections or methods needed, to support this often requires its own packages. For example, the data we want to use is in the s3 bucket and after being transformed will be stored in the database, this requires its own packages. unlike if we run spark-job directly with spark running on the local computer. When running spark-job on a cluster, we must ensure that all required packages are installed first, to overcome this there are many methods that can be used, creating a custom image with packages as a Dockerfile, or using Spark Operator which can install packages automatically, creating a job to download packages and store them in a storage that can be accessed by our kubernetes cluster (pvc). In this tutorial we will use a job to download packages and store them in a storage that can be accessed by the kubernetes cluster.
 
 - Create PVC to store the packages
@@ -94,7 +94,7 @@ kubectl create configmap s3-job-py -n zeatarou --from-file=s3_job.py=/Spark-oper
 
 - Create a ConfigMap for the Spark Application in namespace where Airflow was Installed
 ```bash
-kubectl create spark-s3-job -n airflow --from-file=/Spark-operator/applications/s3-spark-job.yaml
+kubectl create configmap spark-s3-job -n airflow --from-file=/Spark-operator/applications/s3-spark-job.yaml
 ```
 
 - Copy DAG to airflow-scheduler pod
