@@ -64,7 +64,7 @@ kubectl logs -f example-spark-job-driver -n zeatarou
 ```
 
 ## 3. Running the Spark-job Where Need a Packages
-In real cases, when defining spark-jobs, there are many connections or methods needed, to support this often requires its own packages. For example, the data we want to use is in the s3 bucket and after being transformed will be stored in the database, this requires its own packages. unlike if we run spark-job directly with spark running on the local computer. When running spark-job on a cluster, we must ensure that all required packages are installed first, to overcome this there are many methods that can be used, creating a custom image with packages as a Dockerfile, or using Spark Operator which can install packages automatically, creating a job to download packages and store them in a storage that can be accessed by our kubernetes cluster (pvc). In this tutorial we will use a job to download packages and store them in a storage that can be accessed by the kubernetes cluster.
+In real cases, when defining spark-jobs, there are many connections or methods needed, to support this often requires its own packages. For example, the data we want to use is in the s3 bucket and after being transformed will be stored in the database, this requires its own packages. unlike if we run spark-job directly with spark running on the local computer. When running spark-job on a cluster, we must ensure that all required packages are installed first, to overcome this there are many methods that can be used, creating a custom image with packages as a Dockerfile, or using Spark Operator which can install packages automatically, creating a job to download packages and store them in a storage that can be accessed by our kubernetes cluster (pvc). In this tutorial we will use a job to download packages and store them in a storage that can be accessed by the kubernetes cluster. This part using public dataset where we can download the dataset [here](https://www.kaggle.com/datasets/willianoliveiragibin/uk-property-price-data-1995-2023-04).
 
 - Create PVC to store the packages
 ```bash
@@ -116,6 +116,27 @@ UK_PRICE             | /opt/airflow/dags/dag-s3.py           | airflow | None
 - Running the DAG in Airflow UI, or using command line with this command
 ```bash
 kubectl exec -it -n airflow airflow-scheduler-pod-name -- airflow dags trigger UK_PRICE
+```
+
+## 4. Acces File From Compatible S3 Storage, and Manipulation of Data
+Accescing file from aws s3 or s3 compatible using the same method, but we need to adding another jars dependencies where can acces the endpoint of s3 storage. In this part we will use public data where can be acces [here](https://www.kaggle.com/datasets/mohamedbakhet/amazon-books-reviews/data).
+
+- Create secret like previous part, with s3 compatible credentials with name s3-credentials in namespace where Spark-operator and Airflow was installed
+- Reapply job to download jar packages
+```bash
+kubectl apply -f kubernetes/download-jar-dependencies.yaml
+```
+- Create a ConfigMap for the new Spark-job in namespace where Spark-operator was installed
+```bash
+kubectl create configmap book-job-py -n zeatarou --from-file=s3_compatible.py=/Spark-operator/spark-job/s3_compatible.py
+```
+- Create a ConfigMap for the Spark Application in namespace where Airflow was Installed
+```bash
+kubectl create configmap book-job -n airflow --from-file=/Spark-operator/applications/s3_compatible.yaml
+```
+- Copy DAG to airflow-scheduler pod
+```bash
+kubectl cp /Apache-airflow/dags/s3_compatible.py airflow/airflow-scheduler-pod-name:/opt/airflow/dags/
 ```
 
 # Reference
