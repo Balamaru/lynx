@@ -20,7 +20,7 @@ kubectl create configmap example-job-py -n zeatarou --from-file=example_job.py=/
 
 - Create a ConfigMap for the Spark Application in namespace where Airflow was Installed
 ```bash
-kubectl create spark-python-job -n airflow --from-file=/Spark-operator/applications/example-spark-job.yaml
+kubectl create configmap spark-python-job -n airflow --from-file=/Spark-operator/applications/example-spark-job.yaml
 ```
 
 - Copy DAG to airflow-scheduler pod
