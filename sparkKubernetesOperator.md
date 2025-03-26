@@ -7,6 +7,7 @@ kubectl create configmap spark-job -n spark-operator --from-literal=spark-job.py
 ```
 ## 2. Create Airflow DAG with SparkKubernetesOperator
 ```python
+# airflow-dag.py
 from airflow import DAG
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
 from airflow.utils.dates import days_ago
@@ -27,43 +28,7 @@ dag = DAG(
 submit_spark_job = SparkKubernetesOperator(
     task_id='submit_spark_python_job',
     namespace='spark-operator',
-    application_file="""
-apiVersion: "sparkoperator.k8s.io/v1beta2"
-kind: SparkApplication
-metadata:
-  name: example-spark-job
-spec:
-  type: Python
-  mode: cluster
-  image: "spark:3.5.3"
-  imagePullPolicy: Always
-  mainApplicationFile: "local:///opt/spark/work-dir/spark-job.py"
-  sparkVersion: "3.5.3"
-  restartPolicy:
-    type: Never
-  volumes:
-    - name: example-job-volume
-      configMap:
-        name: spark-job
-  driver:
-    cores: 1
-    memory: "1G"
-    labels:
-      version: 3.5.3
-    serviceAccount: spark-operator-spark # ServiceAccount in the same namespace as the Spark Operator
-    volumeMounts:
-      - name: example-job-volume
-        mountPath: /opt/spark/work-dir
-  executor:
-    cores: 1
-    instances: 2
-    memory: "1G"
-    labels:
-      version: 3.5.3
-    volumeMounts:
-      - name: example-job-volume
-        mountPath: /opt/spark/work-dir
-    """,
+    application_file="spark-application.yaml",
     is_delete_operator_pod=False,
     in_cluster=True,
     do_xcom_push=False,
@@ -72,6 +37,8 @@ spec:
 
 submit_spark_job
 ```
+
+Make sure that we must store the spark-application.yaml and airflow-dag.py in the same directory of container where airflow-scheduler running, otherwise we must mount the directory to container with volume mount in Kubernetes deployment of airflow-scheduler.
 
 ## 3. RBAC
 ```bash
