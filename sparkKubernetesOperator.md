@@ -1,13 +1,13 @@
 # Menjalankan Spark Job dengan Airflow by SparkKubernetesOperator
 - Spark-operator running on spark-operator namespace
 - airflow running on airflow namespace with KubernetesExecutor
-## 1. Create configmap of your spark-job and reapply the s3-credentials in the namespace spark-operator
+## 1. Create configmap of your spark-job and reapply the s3-credentials in the namespace spark-operator (zeatarou)
 ```bash
-kubectl create secret generic aws-credentials -n spark-operator \
+kubectl create secret generic aws-credentials -n zeatarou \
   --from-literal=access_key=acces_key \
   --from-literal=secret_key=secret_key
 
-kubectl create configmap s3-job-py -n spark-operator --from-file=s3_job.py=/Spark-operator/spark-job/s3_job.py
+kubectl create configmap s3-job-py -n zeatarou --from-file=s3_job.py=/Spark-operator/spark-job/s3_job.py
 ```
 ## 2. Edit the SparkApplication 
 ```yaml
@@ -113,7 +113,7 @@ class CustomSparkKubernetesOperator(SparkKubernetesOperator):
 
 submit_spark_job = CustomSparkKubernetesOperator(
     task_id="book-job", #task id in airflow-dag will be a spesific name of spark-driver will be created
-    namespace="spark-operator",
+    namespace="zeatarou",
     application_file="book-job.yaml.j2",
     kubernetes_conn_id="kubernetes_default",
     in_cluster=True,
@@ -131,8 +131,8 @@ Make sure that we must store the spark-application.yaml and airflow-dag.py in th
 
 ## 3. RBAC
 ```bash
-kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=spark-operator:spark-operator-spark --namespace=spark-operator
-kubectl create clusterrolebinding default-admin --clusterrole cluster-admin --serviceaccount=airflow:airflow-worker --namespace spark-operator
+kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=zeatarou:zeatarou-spark-operator-spark --namespace=zeatarou
+kubectl create clusterrolebinding default-admin --clusterrole cluster-admin --serviceaccount=airflow:airflow-worker --namespace zeatarou
 ```
 Another rbac that can be used, optionally but recommended if our SparkApplication want to acces spark-job configmap
 ```yaml
@@ -141,7 +141,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: spark-operator-role
-  namespace: spark-operator
+  namespace: zeatarou
 rules:
 - apiGroups: ["sparkoperator.k8s.io"]
   resources: ["sparkapplications"]
@@ -155,13 +155,13 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: airflow-spark-operator-binding
-  namespace: spark-operator
+  namespace: zeatarou
 subjects:
 - kind: ServiceAccount
   name: default
   namespace: airflow
 - kind: ServiceAccount
-  name: spark-operator-spark
+  name: zeatarou-spark-operator-spark
   namespace: spark-operator
 roleRef:
   kind: Role

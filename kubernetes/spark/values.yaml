@@ -2,3 +2,5 @@
 spark:
     jobNamespaces:
     - {{namespaceToRunSparkOperator}} # here i would use zeatarou
+controller:
+    replicas: 2

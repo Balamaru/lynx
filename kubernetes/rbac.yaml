@@ -2,30 +2,71 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: spark-operator-role
+  name: airflow-worker-role
   namespace: zeatarou
 rules:
-- apiGroups: ["sparkoperator.k8s.io"]
-  resources: ["sparkapplications"]
-  verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
-- apiGroups: [""]
-  resources: ["configmaps"]
-  verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["create", "get", "list", "watch", "delete"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["create", "get", "list", "watch", "delete"]
+  - apiGroups: ["sparkoperator.k8s.io"]
+    resources: ["sparkapplications"]
+    verbs: ["create", "get", "list", "watch", "delete"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["get", "list", "watch"]
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: airflow-spark-operator-binding
+  name: airflow-worker-rolebinding
   namespace: zeatarou
 subjects:
-- kind: ServiceAccount
-  name: default
-  namespace: airflow
-- kind: ServiceAccount
-  name: zeatarou-spark-operator-spark
-  namespace: zeatarou
+  - kind: ServiceAccount
+    name: airflow-worker
+    namespace: airflow
 roleRef:
   kind: Role
-  name: spark-operator-role
+  name: airflow-worker-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: spark-driver-role
+  namespace: zeatarou
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["create", "get", "list", "watch", "delete"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["create", "get", "list", "watch", "delete"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["create", "get", "list", "watch", "delete"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: spark-driver-rolebinding
+  namespace: zeatarou
+subjects:
+  - kind: ServiceAccount
+    name: zeatarou-spark-operator-spark
+    namespace: spark-operator
+roleRef:
+  kind: Role
+  name: spark-driver-role
   apiGroup: rbac.authorization.k8s.io

@@ -8,10 +8,6 @@ In every tools that we use, we would running them on Kubernetes
 
 ## 2. Testing the ETL Process
 After setting up the environment and all the resources was running, we can test the ETL process 
-- Create a RBAC to enabled running Spark-job with Airflow
-```bash
-kubectl apply -f kubernetes/rbac.yaml
-```
 
 - Create a ConfigMap for the Spark-job in namespace where Spark-operator was installed
 ```bash
