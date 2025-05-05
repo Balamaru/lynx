@@ -11,6 +11,7 @@ kubectl create configmap s3-job-py -n zeatarou --from-file=s3_job.py=/Spark-oper
 ```
 ## 2. Edit the SparkApplication 
 ```yaml
+# book-job.yaml.j2
 apiVersion: "sparkoperator.k8s.io/v1beta2"
 kind: SparkApplication
 metadata:

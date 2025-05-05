@@ -1,44 +1,40 @@
 from airflow import DAG
-from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
-from datetime import datetime, timedelta
-from kubernetes.client import models as k8s
+from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
+from airflow.utils.dates import days_ago
+from jinja2 import StrictUndefined
 
 default_args = {
-    'owner': 'airflow',
-    'depends_on_past': False,
-    'start_date': datetime(2025, 3, 13),
-    'email_on_failure': False,
-    'email_on_retry': False,
-    'retries': 1,
-    'retry_delay': timedelta(minutes=5),
+    "owner": "airflow",
+    "depends_on_past": False,
+    "start_date": days_ago(1),
 }
 
 dag = DAG(
-    'spark_python_job',
+    "jobnya-zeatarou",
     default_args=default_args,
-    schedule_interval=timedelta(days=1),
+    schedule_interval=None,
     catchup=False,
+    template_undefined=StrictUndefined,
 )
 
-# Definisikan volume dan volume mount
-volume_config = k8s.V1ConfigMapVolumeSource(name="spark-python-job")
-volume = k8s.V1Volume(name="spark-jobs-volume", config_map=volume_config)
-volume_mount = k8s.V1VolumeMount(name="spark-jobs-volume", mount_path="/spark-jobs")
+class CustomSparkKubernetesOperator(SparkKubernetesOperator):
+    template_ext = ('.yaml', '.yaml.j2')
+    template_fields = ('application_file',)
 
-submit_spark_job = KubernetesPodOperator(
-    task_id='submit_spark_python_job',
-    name='spark-python-job-submitter',
-    namespace='airflow',
-    image='bitnami/kubectl:latest',
-    cmds=['kubectl'],
-    arguments=[
-        'apply',
-        '-f', '/spark-jobs/example-spark-job.yaml',
-        '-n', 'zeatarou'
-    ],
-    volumes=[volume],
-    volume_mounts=[volume_mount],
-    is_delete_operator_pod=True,
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+submit_spark_job = CustomSparkKubernetesOperator(
+    task_id="jobnya-zeatarou",
+    namespace="zeatarou",
+    application_file="example-spark-job.yaml.j2",
+    kubernetes_conn_id="kubernetes_default",
     in_cluster=True,
+    do_xcom_push=False,
+    get_logs=True,
+    log_events_on_failure=True,
+    params={"job_name": "jobnya-zeatarou"},
     dag=dag,
 )
+
+submit_spark_job

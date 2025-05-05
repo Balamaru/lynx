@@ -1,7 +1,8 @@
+# example-spark-job.yaml.j2
 apiVersion: "sparkoperator.k8s.io/v1beta2"
 kind: SparkApplication
 metadata:
-  name: example-spark-job
+  name: {{ params.job_name }}
 spec:
   type: Python
   mode: cluster
@@ -11,6 +12,7 @@ spec:
   sparkVersion: "3.5.3"
   restartPolicy:
     type: Never
+  keepPod: true
   volumes:
     - name: example-job-volume
       configMap:
@@ -18,18 +20,23 @@ spec:
   driver:
     cores: 1
     memory: "1G"
+    serviceAccount: zeatarou-spark-operator-spark
     labels:
-      version: 3.5.3
-    serviceAccount: zeatarou-spark-operator-spark # ServiceAccount in the same namespace as the Spark Operator
+      version: "3.5.3"
     volumeMounts:
       - name: example-job-volume
         mountPath: /opt/spark/work-dir
+    annotations:
+      sparkoperator.k8s.io/keepPod: "true"
   executor:
     cores: 1
     instances: 2
     memory: "1G"
     labels:
-      version: 3.5.3
+      version: "3.5.3"
     volumeMounts:
       - name: example-job-volume
         mountPath: /opt/spark/work-dir
+  sparkConf:
+    "spark.eventLog.enabled": "true"
+    "spark.eventLog.dir": "file:/tmp/"
