@@ -63,11 +63,6 @@ resource "helm_release" "zeatarou" {
   ]
 }
 
-
-
-
-
-
 resource "kubernetes_role" "airflow-worker-role" {
   metadata {
     name      = "airflow-worker-role"
