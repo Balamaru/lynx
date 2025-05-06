@@ -1,7 +1,7 @@
 apiVersion: "sparkoperator.k8s.io/v1beta2"
 kind: SparkApplication
 metadata:
-  name: price-uk
+  name: {{ params.job_name }}
 spec:
   type: Python
   mode: cluster

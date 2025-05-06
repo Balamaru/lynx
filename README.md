@@ -69,47 +69,41 @@ kubectl create configmap s3-job-py -n zeatarou --from-file=s3_job.py=/Spark-oper
 kubectl create configmap spark-s3-job -n airflow --from-file=/Spark-operator/applications/s3-spark-job.yaml
 ```
 
-- Copy DAG to airflow-scheduler pod
+- Copy DAG and SparkApplication to airflow-scheduler pod
 ```bash
+kubectl cp /Spark-operator/applications/s3-spark-job.yaml.j2 airflow/airflow-scheduler-pod-name:/opt/airflow/dags/
 kubectl cp /Apache-airflow/dags/dag-s3.py airflow/airflow-scheduler-pod-name:/opt/airflow/dags/
 ```
 
-- Check if DAG was successfully define to airflow-scheduler
-```bash
-kubectl exec -it -n airflow airflow-scheduler-pod-name -- airflow dags list
-
-# output
-dag_id               | fileloc                               | owners  | is_paused
-=====================+=======================================+=========+==========
-spark_python_job     | /opt/airflow/dags/spark_python_job.py | airflow | None
-UK_PRICE             | /opt/airflow/dags/dag-s3.py           | airflow | None
-```
-
-- Running the DAG in Airflow UI, or using command line with this command
-```bash
-kubectl exec -it -n airflow airflow-scheduler-pod-name -- airflow dags trigger UK_PRICE
-```
+- Running the DAG in Airflow UI
 
 ## 4. Acces File From Compatible S3 Storage, and Manipulation of Data
 Accescing file from aws s3 or s3 compatible using the same method, but we need to adding another jars dependencies where can acces the endpoint of s3 storage. In this part we will use public data where can be acces [here](https://www.kaggle.com/datasets/mohamedbakhet/amazon-books-reviews/data).
 
 - Create secret like previous part, with s3 compatible credentials with name s3-credentials in namespace where Spark-operator and Airflow was installed
+
 - Reapply job to download jar packages
 ```bash
 kubectl apply -f kubernetes/download-jar-dependencies.yaml
 ```
+
 - Create a ConfigMap for the new Spark-job in namespace where Spark-operator was installed
 ```bash
 kubectl create configmap book-job-py -n zeatarou --from-file=s3_compatible.py=/Spark-operator/spark-job/s3_compatible.py
 ```
+
 - Create a ConfigMap for the Spark Application in namespace where Airflow was Installed
 ```bash
 kubectl create configmap book-job -n airflow --from-file=/Spark-operator/applications/s3_compatible.yaml
 ```
-- Copy DAG to airflow-scheduler pod
+
+- Copy DAG and SparkApplication to airflow-scheduler pod
 ```bash
+kubectl cp /Spark-operator/applications/s3_compatible.yaml.j2 airflow/airflow-scheduler-pod-name:/opt/airflow/dags/
 kubectl cp /Apache-airflow/dags/s3_compatible.py airflow/airflow-scheduler-pod-name:/opt/airflow/dags/
 ```
+
+- Running the DAG in Airflow UI
 
 # Reference
 - [Deploying Spark on Kubernetes using Helm Charts: Simplified Cluster Management and Configuration](https://medium.com/@SaphE/deploying-apache-spark-on-kubernetes-using-helm-charts-simplified-cluster-management-and-ee5e4f2264fd)
