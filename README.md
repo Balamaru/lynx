@@ -64,11 +64,6 @@ kubectl create secret generic aws-credentials -n airflow \
 kubectl create configmap s3-job-py -n zeatarou --from-file=s3_job.py=/Spark-operator/spark-job/s3_job.py
 ```
 
-- Create a ConfigMap for the Spark Application in namespace where Airflow was Installed
-```bash
-kubectl create configmap spark-s3-job -n airflow --from-file=/Spark-operator/applications/s3-spark-job.yaml
-```
-
 - Copy DAG and SparkApplication to airflow-scheduler pod
 ```bash
 kubectl cp /Spark-operator/applications/s3-spark-job.yaml.j2 airflow/airflow-scheduler-pod-name:/opt/airflow/dags/
@@ -90,11 +85,6 @@ kubectl apply -f kubernetes/download-jar-dependencies.yaml
 - Create a ConfigMap for the new Spark-job in namespace where Spark-operator was installed
 ```bash
 kubectl create configmap book-job-py -n zeatarou --from-file=s3_compatible.py=/Spark-operator/spark-job/s3_compatible.py
-```
-
-- Create a ConfigMap for the Spark Application in namespace where Airflow was Installed
-```bash
-kubectl create configmap book-job -n airflow --from-file=/Spark-operator/applications/s3_compatible.yaml
 ```
 
 - Copy DAG and SparkApplication to airflow-scheduler pod
